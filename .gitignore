@@ -1,0 +1,33 @@
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+db.sqlite3
+*.log
+
+# Environment
+.env
+venv/
+.venv/
+.env.local
+.env.production
+.env.development
+
+# Django static / media
+staticfiles/
+media/
+uploads/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Node / NPM (if using CKEditor builds or frontend assets)
+node_modules/
+package-lock.json

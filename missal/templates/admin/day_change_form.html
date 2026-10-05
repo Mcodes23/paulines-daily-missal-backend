@@ -1,0 +1,28 @@
+{% extends "admin/change_form.html" %} {% load static %} {% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'missal/composer.css' %}" />
+<script defer src="{% static 'missal/composer.js' %}"></script>
+{% endblock extrahead %} {% block content_title %} {{ block.super }}
+<div id="composer-steps" class="composer-steps">
+  <div class="step" data-step="1">1. Day</div>
+  <div class="step" data-step="2">2. Readings</div>
+  <div class="step" data-step="3">3. Psalm</div>
+  <div class="step" data-step="4">4. Acclamation</div>
+  <div class="step" data-step="5">5. Specials</div>
+  <div class="step" data-step="6">6. Universal</div>
+  <div class="step" data-step="7">7. Review & Save</div>
+</div>
+{% endblock content_title %} {% block submit_buttons_top %}
+<div class="composer-nav">
+  <button type="button" class="button prev-step">← Back</button>
+  <button type="button" class="button next-step">Next →</button>
+  <button type="submit" class="button button-primary save-step">Save</button>
+</div>
+{{ block.super }} {% endblock submit_buttons_top %} {% block
+submit_buttons_bottom %}
+<div class="composer-nav bottom">
+  <button type="button" class="button prev-step">← Back</button>
+  <button type="button" class="button next-step">Next →</button>
+  <button type="submit" class="button button-primary save-step">Save</button>
+</div>
+{{ block.super }} {% endblock submit_buttons_bottom %}

@@ -1,0 +1,122 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}{{ day.title_ref.name }} — Missal Preview{% endblock %}
+{% block content %}
+<style>
+  body { background: #f5f5f5; }
+  .missal-page { width:80vw;max-width:1000px;margin:2.5rem auto;background:#fff;
+    padding:4rem 3.5rem;border-radius:8px;box-shadow:0 2px 18px rgba(0,0,0,0.09);
+    font-family:'Georgia','Times New Roman',serif;color:#222;line-height:1.8;font-size:1.03rem;}
+  h1,h2,h3,h4{text-transform:uppercase;font-weight:bold;text-align:center;color:var(--color-primary);}
+  h1{font-size:2rem;margin-bottom:0.2rem;}
+  h2{font-size:1.4rem;margin-top:2rem;margin-bottom:0.4rem;}
+  h3{font-size:1.05rem;font-style:italic;margin-bottom:0.7rem;color:var(--color-primary);}
+  .subtitle{text-align:center;font-size:1.05rem;color:#555;margin-bottom:1.2rem;}
+  .rule{width:100%;border-top:2px solid var(--color-primary);margin:1.5rem 0 1.5rem;}
+  .section{margin-bottom:2rem;}
+  .section-title{color:var(--color-primary);font-weight:bold;letter-spacing:0.4px;font-size:1.05rem;}
+  .reference{float:right;color:var(--color-primary);font-style:italic;}
+  .intro{font-style:italic;color:#555;margin-bottom:0.7rem;}
+  .quote{font-style:italic;margin:1rem 0;color:#333;}
+  .reading-content p{text-align:justify;margin:0.8rem 0;}
+  .response{color:var(--color-primary);font-weight:bold;font-style:italic;margin-top:0.8rem;}
+  .verse{margin-left:1.5rem;white-space:pre-line;}
+  .alt-box{border-left:4px solid var(--color-primary);padding-left:1rem;margin-top:1.5rem;background:#fafafa;font-size:0.95rem;}
+  footer{border-top:1px solid #eee;text-align:center;font-size:0.9rem;color:#777;margin-top:3.5rem;padding-top:1rem;}
+  em{font-style:italic;} strong{font-weight:bold;}
+  .smallcaps{font-variant:small-caps;letter-spacing:0.5px;}
+  .cycle-header{border-top:2px solid var(--color-primary);border-bottom:2px solid var(--color-primary);
+                padding:0.5rem;text-align:center;font-weight:bold;text-transform:uppercase;margin:2rem 0 1rem;}
+  :root{--color-ordinary:#0f5132;--color-lent:#6f42c1;--color-easter:#b30059;
+        --color-christmas:#b30059;--color-pentecost:#b30059;--color-default:#b30059;}
+</style>
+
+{% if day.effective_color == "GREEN" %}
+  <style>:root{--color-primary:var(--color-ordinary);}</style>
+{% elif day.effective_color == "PURPLE" %}
+  <style>:root{--color-primary:var(--color-lent);}</style>
+{% elif day.effective_color == "WHITE" %}
+  <style>:root{--color-primary:var(--color-christmas);}</style>
+{% elif day.effective_color == "RED" %}
+  <style>:root{--color-primary:var(--color-pentecost);}</style>
+{% else %}
+  <style>:root{--color-primary:var(--color-default);}</style>
+{% endif %}
+
+<div class="missal-page">
+  <h1>{{ day.title_ref.name|upper }}</h1>
+  <div class="subtitle">{{ day.liturgical_day_type.name }} — {{ day.season.name }}</div>
+  <div class="rule"></div>
+
+  {% if day.theme %}
+    <div class="section">
+      <h3>Theme of the Day</h3>
+      <div>{{ day.theme|linebreaksbr }}</div>
+    </div>
+  {% endif %}
+
+  {% if day.introductory_rites %}
+    <div class="section">
+      <div class="section-title">ENTRANCE ANTIPHON{% if day.introductory_rites.entrance_antiphon_reference %}
+        <span class="reference">{{ day.introductory_rites.entrance_antiphon_reference }}</span>{% endif %}</div>
+      <div>{{ day.introductory_rites.entrance_antiphon_text|safe }}</div>
+      {% for alt in day.introductory_rites.entrance_alts.all %}
+        <div class="alt-box"><strong>Alternate:</strong> {{ alt.text|safe }}</div>
+      {% endfor %}
+
+      <div class="section-title mt-4">COLLECT</div>
+      <div>{{ day.introductory_rites.collect_text|safe }}</div>
+      {% for alt in day.introductory_rites.collect_alts.all %}
+        <div class="alt-box"><strong>Alternate:</strong> {{ alt.text|safe }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% with day.liturgical_day_type.name|lower as dtype %}
+    {% if day.sunday_cycles.exists or day.weekday_cycles.exists %}
+      {% if "sunday" in dtype %}
+        {% for cycle in day.sunday_cycles.all %}
+          <div class="cycle-header">YEAR {{ cycle.code }}</div>
+          {% include "admin/missal/_cycle_readings.html" with cycle=cycle %}
+        {% endfor %}
+      {% else %}
+        {% for cycle in day.weekday_cycles.all %}
+          <div class="cycle-header">YEAR {{ cycle.code }}</div>
+          {% include "admin/missal/_cycle_readings.html" with cycle=cycle %}
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      {% include "admin/missal/_cycle_readings.html" %}
+    {% endif %}
+  {% endwith %}
+
+  {% if day.special_sections %}
+    <div class="section">
+      <div class="section-title">PRAYER OVER THE OFFERINGS</div>
+      <div>{{ day.special_sections.prayer_over_offerings_text|safe }}</div>
+
+     <div class="section-title mt-3">
+        COMMUNION ANTIPHON
+        {% if day.special_sections.communion_antiphon_reference %}
+          <span class="reference">{{ day.special_sections.communion_antiphon_reference }}</span>
+        {% endif %}
+      </div>
+      <div>{{ day.special_sections.communion_antiphon_text|safe }}</div>
+
+
+      {% if day.special_sections.prayer_after_communion_text %}
+        <div class="section-title mt-3">PRAYER AFTER COMMUNION</div>
+        <p>{{ day.special_sections.prayer_after_communion_text|safe }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <footer>Missal Preview • Generated {{ now|date:"F j, Y, g:i a" }}</footer>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.body.innerHTML=document.body.innerHTML.replace(/\bLORD\b/g,'<span class="smallcaps">LORD</span>');
+  });
+</script>
+{% endblock %}

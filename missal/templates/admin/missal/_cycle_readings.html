@@ -1,0 +1,122 @@
+{% for r in day.readings.all %}
+  {% if not cycle %}
+    <div class="section">
+      <div class="section-title">
+        {{ r.kind.name|upper }}
+        {% if r.reference %}
+          <span class="reference">{{ r.reference }}</span>
+        {% endif %}
+      </div>
+      {% if r.quote %}
+        <div class="quote">“{{ r.quote|safe }}”</div>
+      {% endif %}
+      {% if r.introduction %}
+        <div class="intro">{{ r.introduction|safe }}</div>
+      {% endif %}
+      <div class="reading-content">{{ r.content|safe }}</div>
+      {% if r.conclusion %}
+        <div><strong>{{ r.conclusion|safe }}</strong></div>
+      {% endif %}
+    </div>
+  {% else %}
+    {% if r.sunday_cycles.all %}
+      {% for c in r.sunday_cycles.all %}
+        {% if c.code == cycle.code %}
+          <div class="section">
+            <div class="section-title">
+              {{ r.kind.name|upper }}
+              {% if r.reference %}
+                <span class="reference">{{ r.reference }}</span>
+              {% endif %}
+            </div>
+            {% if r.quote %}
+              <div class="quote">“{{ r.quote|safe }}”</div>
+            {% endif %}
+            {% if r.introduction %}
+              <div class="intro">{{ r.introduction|safe }}</div>
+            {% endif %}
+            <div class="reading-content">{{ r.content|safe }}</div>
+            {% if r.conclusion %}
+              <div><strong>{{ r.conclusion|safe }}</strong></div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if r.weekday_cycles.all %}
+      {% for c in r.weekday_cycles.all %}
+        {% if c.code == cycle.code %}
+          <div class="section">
+            <div class="section-title">
+              {{ r.kind.name|upper }}
+              {% if r.reference %}
+                <span class="reference">{{ r.reference }}</span>
+              {% endif %}
+            </div>
+            {% if r.quote %}
+              <div class="quote">“{{ r.quote|safe }}”</div>
+            {% endif %}
+            {% if r.introduction %}
+              <div class="intro">{{ r.introduction|safe }}</div>
+            {% endif %}
+            <div class="reading-content">{{ r.content|safe }}</div>
+            {% if r.conclusion %}
+              <div><strong>{{ r.conclusion|safe }}</strong></div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% if day.responsorial_psalm %}
+  <div class="section">
+    <div class="section-title">
+      RESPONSORIAL PSALM
+      {% if day.responsorial_psalm.reference %}
+        <span class="reference">{{ day.responsorial_psalm.reference }}</span>
+      {% endif %}
+    </div>
+    {% if day.responsorial_psalm.response %}
+      <div class="response">R. <span>{{ day.responsorial_psalm.response|safe }}</span></div>
+    {% endif %}
+    {% if day.responsorial_psalm.verses %}
+      <div class="verse">{{ day.responsorial_psalm.verses|safe }}</div>
+    {% endif %}
+    {% for alt in day.responsorial_psalm.alternatives_items.all %}
+      <div class="alt-box">
+        <strong>Alternate{% if alt.reference %} ({{ alt.reference }}){% endif %}:</strong>
+        {% if alt.response %}
+          <div class="response">R. {{ alt.response|safe }}</div>
+        {% endif %}
+        {% if alt.verses %}
+          <div class="verse">{{ alt.verses|safe }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if day.gospel_acclamation %}
+  <div class="section">
+    <div class="section-title">GOSPEL ACCLAMATION</div>
+    {% if day.gospel_acclamation.primary_acclamation %}
+      <div class="response"><strong>{{ day.gospel_acclamation.primary_acclamation|safe }}</strong></div>
+    {% endif %}
+    {% if day.gospel_acclamation.verse %}
+      <div class="verse">{{ day.gospel_acclamation.verse|safe }}</div>
+    {% endif %}
+    {% for alt in day.gospel_acclamation.alternatives_items.all %}
+      <div class="alt-box">
+        <strong>Alternate{% if alt.reference %} ({{ alt.reference }}){% endif %}:</strong>
+        {% if alt.primary_acclamation %}
+          <div class="response"><strong>{{ alt.primary_acclamation|safe }}</strong></div>
+        {% endif %}
+        {% if alt.verse %}
+          <div class="verse">{{ alt.verse|safe }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
