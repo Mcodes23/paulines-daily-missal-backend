@@ -53,6 +53,6 @@ def register_exception_handlers(app: FastAPI):
             status_code=500,
             content={
                 "success": False,
-                "message": f"Unexpected error: {str(exc)}",
+                "message": "An unexpected error occurred",
             },
         )

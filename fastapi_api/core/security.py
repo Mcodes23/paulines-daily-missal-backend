@@ -4,9 +4,11 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from passlib.context import CryptContext
 from django.conf import settings
+from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import ImproperlyConfigured
 
 # ------------------------------------------------------------------
-# Password hashing (CORRECT, SAFE, PYTHON 3.12 COMPATIBLE)
+# Django password hashes, with read-only verification of legacy hashes
 # ------------------------------------------------------------------
 
 pwd_context = CryptContext(
@@ -16,11 +18,20 @@ pwd_context = CryptContext(
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return make_password(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if not isinstance(hashed_password, str) or not hashed_password:
+        return False
+
+    try:
+        if hashed_password.startswith("$bcrypt-sha256$"):
+            return pwd_context.verify(plain_password, hashed_password)
+        return check_password(plain_password, hashed_password)
+    except (ValueError, OverflowError):
+        # Reject malformed encodings, including out-of-range work factors.
+        return False
 
 
 # ------------------------------------------------------------------
@@ -61,8 +72,20 @@ def create_refresh_token(user_id: str) -> tuple[str, str]:
 
 
 def decode_token(token: str) -> dict:
-    return jwt.decode(
-        token,
-        settings.JWT_SECRET_KEY,
-        algorithms=[settings.JWT_ALGORITHM],
-    )
+    signing_key = settings.JWT_SECRET_KEY
+    algorithm = settings.JWT_ALGORITHM
+    if not isinstance(signing_key, (str, bytes)) or not signing_key:
+        raise ImproperlyConfigured("JWT signing key must be a non-empty string or bytes")
+    if not isinstance(algorithm, str) or not algorithm:
+        raise ImproperlyConfigured("JWT algorithm must be a non-empty string")
+
+    try:
+        return jwt.decode(
+            token,
+            signing_key,
+            algorithms=[algorithm],
+            options={"require": ["exp", "sub", "type"]},
+        )
+    except (TypeError, OverflowError):
+        # PyJWT does not normalize every malformed NumericDate conversion.
+        raise jwt.InvalidTokenError("Invalid token timestamp") from None

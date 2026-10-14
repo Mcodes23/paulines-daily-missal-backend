@@ -1,6 +1,15 @@
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import AfterValidator, BaseModel, EmailStr, field_validator
+
+
+def _validate_recovery_token(value: str) -> str:
+    if not value.strip():
+        raise ValueError("Token must not be empty or whitespace")
+    return value
+
+
+RecoveryToken = Annotated[str, AfterValidator(_validate_recovery_token)]
 
 
 class RegisterRequest(BaseModel):
@@ -32,11 +41,11 @@ class TokenResponse(BaseModel):
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: RecoveryToken
 
 
 class VerifyEmailRequest(BaseModel):
-    token: str
+    token: RecoveryToken
 
 
 class ResendVerificationRequest(BaseModel):
@@ -48,7 +57,7 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str
+    token: RecoveryToken
     new_password: str
 
     @field_validator("new_password")

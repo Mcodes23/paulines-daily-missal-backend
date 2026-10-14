@@ -8,7 +8,7 @@ A hybrid **FastAPI + Django** backend that serves Catholic liturgical readings, 
 - **Django 4.2** - ORM, admin interface, migrations
 - **PostgreSQL** - primary database
 - **JWT (PyJWT)** - access + refresh token authentication
-- **bcrypt** - password hashing
+- **Django password hashing** - new passwords, with legacy bcrypt_sha256 verification
 - **Jazzmin** - modern Django admin theme
 - **httpx** - async HTTP client for external API calls
 
@@ -168,8 +168,8 @@ flowchart LR
 | POST | `/refresh` | No | Refresh access token |
 | POST | `/logout` | Yes | Invalidate refresh token |
 | POST | `/verify-email` | No | Verify email with token |
-| POST | `/resend-verification` | No | Resend verification email |
-| POST | `/forgot-password` | No | Send password reset token |
+| POST | `/resend-verification` | No | Returns 503 until private email delivery is configured |
+| POST | `/forgot-password` | No | Returns 503 until private email delivery is configured |
 | POST | `/reset-password` | No | Reset password with token |
 
 ### Profile (`/api/v1/auth/profile`)
@@ -312,5 +312,19 @@ uvicorn fastapi_api.main:app --reload --port 8000
 
 - **Access Token**: 30-minute expiry, HS256 algorithm
 - **Refresh Token**: 30-day expiry, includes JTI for revocation
-- **Password Hashing**: bcrypt via passlib
+- **Password Hashing**: Django-compatible hashes for new passwords; existing Passlib bcrypt_sha256 hashes remain verifiable without automatic rewrites
 - Refresh tokens are tracked by JTI in UserProfile, enabling server-side revocation on logout
+
+## Authentication and subscription regression tests
+
+Run the isolated PostgreSQL suite with the existing virtual environment:
+
+```bash
+.venv/bin/python -B scripts/run_auth_tests.py accounts.test_isolation accounts.test_auth_flows accounts.test_subscription_flows
+```
+
+This starts a fresh private PostgreSQL cluster and uses independent test settings;
+it does not load `.env` or connect to the application database. Existing migrations
+are applied only to a new disposable test database. See
+[George's frontend handoff](FRONTEND_AUTH_HANDOFF.md) for endpoint contracts,
+fixture states, and the remaining provisioning requirements.

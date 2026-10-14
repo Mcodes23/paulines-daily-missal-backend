@@ -14,7 +14,10 @@ django.setup()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi.staticfiles import StaticFiles
 from django.core.wsgi import get_wsgi_application
+from django.conf import settings
+
 
 from fastapi_api.core.exceptions import register_exception_handlers
 from fastapi_api.core.standard_response import StandardResponse
@@ -41,6 +44,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve Django collected static files
+app.mount(
+    "/static",
+    StaticFiles(directory=str(settings.STATIC_ROOT)),
+    name="static",
+)
 # ───────────────────────────────────────────────
 # Mount Django Admin
 # ───────────────────────────────────────────────
